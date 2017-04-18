@@ -20,26 +20,37 @@ export class WeatherPage {
   constructor(public navCtrl: NavController,
               public navParams: NavParams,
               public weatherService: WeatherService,
-              public loadingController: LoadingController) {
+              public loadingController: LoadingController,
+              public geolocation: Geolocation) {
     let loader = this.loadingController.create({
       content: "Loading weather data...",
-      duration: 3000,
     });
 
     loader.present();
 
-    this.weatherService.getWeather().then(theResult => {
-      this.theWeather = theResult;
-      this.currentData = this.theWeather.currently;
-      this.daily = this.theWeather.daily;
-    });
+    // this.weatherService.getWeather().then(theResult => {
+    //   this.theWeather = theResult;
+    //   this.currentData = this.theWeather.currently;
+    //   this.daily = this.theWeather.daily;
+    // });
 
-    Geolocation.getCurrentPosition().then(pos => {
+    this.geolocation.getCurrentPosition().then(pos => {
       console.log('lat: ' + pos.coords.latitude + ', lon: ' + pos.coords.longitude);
 
       this.currentLoc.lat = pos.coords.latitude;
       this.currentLoc.lon = pos.coords.longitude;
       this.currentLoc.timestamp = pos.timestamp;
+      return this.currentLoc;
+    }).then(currentLoc => {
+      weatherService.getWeather(currentLoc).then(theResult => {
+        this.theWeather = theResult;
+        this.currentData = this.theWeather.currently;
+        this.daily = this.theWeather.daily;
+        loader.dismiss();
+      });
+    })
+    .catch(err => {
+      console.error(err);
     });
   }
 

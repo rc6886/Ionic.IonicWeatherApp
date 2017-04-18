@@ -1,13 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
+import { CurrentLoc } from '../app/interfaces/current-loc';
 import 'rxjs/add/operator/map';
 
-/*
-  Generated class for the WeatherService provider.
-
-  See https://angular.io/docs/ts/latest/guide/dependency-injection.html
-  for more info on providers and Angular 2 DI.
-*/
 @Injectable()
 export class WeatherService {
   data: any = null;
@@ -16,13 +11,14 @@ export class WeatherService {
     console.log('Hello WeatherService Provider');
   }
 
-  load() {
+  load(currentLoc: CurrentLoc) {
     if (this.data) {
       return Promise.resolve(this.data);
     }
 
     return new Promise(resolve => {
-      this.http.get('assets/data/data.json')
+      console.log('/api/forecast/' + currentLoc.lat + ',' + currentLoc.lon);
+      this.http.get('/api/forecast/' + currentLoc.lat + ',' + currentLoc.lon)
         .map(res => res.json())
         .subscribe(data => {
           this.data = data;
@@ -31,8 +27,10 @@ export class WeatherService {
     });
   }
 
-  getWeather() {
-    return this.load().then(data => {
+  getWeather(currentLoc: CurrentLoc) {
+    this.data = null;
+
+    return this.load(currentLoc).then(data => {
       return data;
     });
   }
