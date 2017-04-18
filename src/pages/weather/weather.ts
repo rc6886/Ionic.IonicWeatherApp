@@ -16,6 +16,7 @@ export class WeatherPage {
   loader: LoadingController;
   refresher: Refresher;
   currentLoc: CurrentLoc = {lat:0, lon:0};
+  pageTitle: string = 'Current Location';
 
   constructor(public navCtrl: NavController,
               public navParams: NavParams,
@@ -27,31 +28,35 @@ export class WeatherPage {
     });
 
     loader.present();
+    let loc = this.navParams.get('geoloc');
 
-    // this.weatherService.getWeather().then(theResult => {
-    //   this.theWeather = theResult;
-    //   this.currentData = this.theWeather.currently;
-    //   this.daily = this.theWeather.daily;
-    // });
+    if (!loc) {
+      this.geolocation.getCurrentPosition().then(pos => {
+        console.log('lat: ' + pos.coords.latitude + ', lon: ' + pos.coords.longitude);
 
-    this.geolocation.getCurrentPosition().then(pos => {
-      console.log('lat: ' + pos.coords.latitude + ', lon: ' + pos.coords.longitude);
+        this.currentLoc.lat = pos.coords.latitude;
+        this.currentLoc.lon = pos.coords.longitude;
+        this.currentLoc.timestamp = pos.timestamp;
+        return this.currentLoc;
+      }).then(currentLoc => {
+        weatherService.getWeather(currentLoc).then(theResult => {
+          this.theWeather = theResult;
+          this.currentData = this.theWeather.currently;
+          this.daily = this.theWeather.daily;
+          loader.dismiss();
+        });
+      });
+    } else {
+      this.pageTitle = this.navParams.get('title');
+      this.currentLoc = loc;
 
-      this.currentLoc.lat = pos.coords.latitude;
-      this.currentLoc.lon = pos.coords.longitude;
-      this.currentLoc.timestamp = pos.timestamp;
-      return this.currentLoc;
-    }).then(currentLoc => {
-      weatherService.getWeather(currentLoc).then(theResult => {
+      weatherService.getWeather(this.currentLoc).then(theResult => {
         this.theWeather = theResult;
         this.currentData = this.theWeather.currently;
         this.daily = this.theWeather.daily;
         loader.dismiss();
       });
-    })
-    .catch(err => {
-      console.error(err);
-    });
+    }
   }
 
   ionViewDidLoad() {
@@ -59,8 +64,11 @@ export class WeatherPage {
   }
 
   doRefresh(refresher) {
-    setTimeout(() => {
+    this.weatherService.getWeather(this.currentLoc).then(theResult => {
+      this.theWeather = theResult;
+      this.currentData = this.theWeather.currently;
+      this.daily = this.theWeather.daily;
       refresher.complete();
-    }, 2000);
+    });
   }
 }
