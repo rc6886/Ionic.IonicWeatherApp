@@ -5,7 +5,7 @@ import 'rxjs/add/operator/map';
 @Injectable()
 export class GeocodeService {
   data: any;
-  apiKey: string = '';
+  apiKey: string = 'AIzaSyC04a63WNfohuBuvwiMVmRUUuVYzqhxALw';
 
   constructor(public http: Http) {
     this.data = null;
@@ -17,7 +17,7 @@ export class GeocodeService {
     }
 
     return new Promise(resolve => {
-      this.http.get(`https://maps.googleapis.com/maps/api/geocode/json?address${encodeURIComponent(address)}&key=${this.apiKey}`)
+      this.http.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${this.apiKey}`)
       .map(res => res.json())
       .subscribe(data => {
         if (data.status === "OK") {

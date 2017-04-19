@@ -7,7 +7,7 @@ import { WeatherPage } from '../pages/weather/weather';
 import { LocationsPage } from '../pages/locations/locations';
 import { WeatherService } from '../providers/weather-service';
 import { CurrentLoc } from './interfaces/current-loc';
-
+import { LocationsService } from '../providers/locations-service';
 
 @Component({
   templateUrl: 'app.html'
@@ -22,9 +22,11 @@ export class MyApp {
   constructor(public platform: Platform,
               public statusBar: StatusBar,
               public splashScreen: SplashScreen,
-              public weatherService: WeatherService) {
+              public weatherService: WeatherService,
+              public locationsService: LocationsService) {
 
     this.initializeApp();
+    this.getMyLocations();
 
     // used for an example of ngFor and navigation
     this.pages = [
@@ -55,5 +57,18 @@ export class MyApp {
     } else {
       this.nav.setRoot(page.component);
     }
+  }
+
+  getMyLocations() {
+    this.locationsService.getLocations().then(res => {
+      this.pages = [
+        { title: "Edit Locations", component: LocationsPage, icon: "create" },
+        { title: "Current Location", component: WeatherPage, icon: "pin" }
+      ];
+
+      for (let newLoc of res) {
+        this.pages.push(newLoc);
+      }
+    });
   }
 }
